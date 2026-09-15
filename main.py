@@ -43,7 +43,12 @@ WordList = response.json()
 GuessedLetters = []
 Guess = "_____"
 LetterGuessed = ""
-RandomWord = ""
+RandomWord = ''
+
+def FindNewWord():
+    global RandomWord
+    if GameActive:
+        RandomWord = WordList[random.randint(0, len(WordList) - 1)]
 
 def CheckLetters(RandomWord, LetterGuessed):
     if GuessingLetter:
@@ -65,8 +70,9 @@ def StartScreen():
     WindowScreen.blit(EnterStart, EnterStartRect)
 
 def GameScreen():
+
     global RandomWord
-    RandomWord = WordList[random.randint(0, len(WordList) - 1)]
+    
     WindowScreen.blit(Background, (0, 0))
     WindowScreen.blit(Try1, (0, 0))
 
@@ -77,7 +83,7 @@ while True:
             exit()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
             GameActive = True
-        if event.type == pygame.KEYDOWN and event.key != pygame.K_RETURN:
+        if event.type == pygame.KEYDOWN and event.key != pygame.K_RETURN and GameActive:
             LetterGuessed = event.unicode.upper()
             CheckLetters(RandomWord, LetterGuessed)
             print(Guess)
