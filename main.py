@@ -46,6 +46,7 @@ GuessedLetters = []
 Guess = "_____"
 LetterGuessed = ""
 RandomWord = ''
+LoseScreen = False
 
 def FindNewWord():
     global RandomWord
@@ -71,15 +72,15 @@ def StartScreen():
     EnterStartRect = EnterStart.get_rect(midtop = (FrameX / 2, 280))
     WindowScreen.blit(EnterStart, EnterStartRect)
 
-def GameScreen(GameActive):
+def GameScreen():
+    global LoseScreen, GameActive
     
     WindowScreen.blit(Background, (0, 0))
     WindowScreen.blit(Try1, (0, 0))
     
     if len(GuessedLetters) > 10:
         GameActive = False
-        WindowScreen.blit(Background, (0, 0))
-        WindowScreen.blit(Lose, (0, 0))
+        LoseScreen = True
 
 def UpdateWord():
     print(Guess)
@@ -93,24 +94,31 @@ while True:
             pygame.quit()
             print(GuessedLetters)
             exit()
+
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
             GameActive = True
             FindNewWord()
+
         if event.type == pygame.KEYDOWN and event.key != pygame.K_RETURN and GameActive:
             LetterGuessed = event.unicode.upper()
             CheckLetters(RandomWord, LetterGuessed)
             print(Guess)
-        if event.type == pygame.KEYDOWN:
-            # print(GuessedLetters)
-            pygame.KEYDOWN
+
+        # if event.type == pygame.KEYDOWN:
+        #     # Hello, World!("print")
 
         if GameActive:
             if LetterGuessed not in GuessedLetters:
                 GuessedLetters.append(LetterGuessed)
-            GameScreen(GameActive)
+
+            GameScreen()
             UpdateWord()
         else:
-            StartScreen()
+            if LoseScreen:
+                WindowScreen.blit(Background, (0, 0))
+                WindowScreen.blit(Lose, (0, 0))
+            else:
+                StartScreen()
 
     pygame.display.update()
     Clock.tick(FPS)
