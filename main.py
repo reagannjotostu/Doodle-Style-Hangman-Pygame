@@ -15,15 +15,15 @@ WindowScreen.fill(White)
 Clock = pygame.time.Clock()
 FPS = 60
 GuessingLetter = True
-Attempt = 0
-BestGuess = 0
+BestGuess = 1000000000000
 GameActive = False
 LoseScreen = False
 WinScreen = False
-Guesses = 0
+Guesses = 999
 
 Font = pygame.font.Font('Font/April.ttf', 36)
 GameFont = pygame.font.Font('Font/April.ttf', 72)
+DisplayGuessedLettersFont = pygame.font.Font('Font/April.ttf', 36)
 TitleScreen = pygame.image.load('Image/Hangman.png').convert_alpha()
 Win = pygame.image.load('Image/Win.png').convert_alpha()
 Lose = pygame.image.load('Image/Lose.png').convert_alpha()
@@ -51,13 +51,10 @@ LetterGuessed = ""
 RandomWord = ''
 
 def Initialize():
-    global GuessingLetter, Attempt, BestGuess, GameActive, LoseScreen, Guesses, Guess, GuessedLetters, RandomWord, LetterGuessed
+    global GuessingLetter, GameActive, LoseScreen, Guess, GuessedLetters, RandomWord, LetterGuessed
     GuessingLetter = True
-    Attempt = 0
-    BestGuess = 0
     GameActive = False
     LoseScreen = False
-    Guesses = 0
     Guess = "_____"
     GuessedLetters = []
     RandomWord = ''
@@ -82,17 +79,30 @@ def ShowLetters(LetterIndex, LetterGuessed):
     Guess = ReplaceAtIndex(Guess, LetterIndex, LetterGuessed)
     
 def StartScreen():
+    global BestGuess
+    
+    if BestGuess > Guesses:
+        BestGuess = Guesses
+    
     WindowScreen.blit(Background, (0, 0))
     WindowScreen.blit(TitleScreen, (0, 0))
     EnterStart = Font.render(f"Press enter to start!", True, Black)
     EnterStartRect = EnterStart.get_rect(midtop = (FrameX / 2, 280))
-    WindowScreen.blit(EnterStart, EnterStartRect)
+    DisplayScore = Font.render(f"Your attempt count was: {Guesses}.", True, Black)
+    DisplayScoreRect = DisplayScore.get_rect(midtop = (FrameX / 2, 230))
+    DisplayHighScore = Font.render(f"Your least attempt count is: {BestGuess}.", True, Black)
+    DisplayHighScoreRect = DisplayHighScore.get_rect(midtop = (FrameX / 2, 300))
+    
+    if Guesses > 10:
+        WindowScreen.blit(EnterStart, EnterStartRect)
+    else:
+        WindowScreen.blit(DisplayScore, DisplayScoreRect)
+        WindowScreen.blit(DisplayHighScore, DisplayHighScoreRect)
 
 def GameScreen():
     global LoseScreen, WinScreen, GameActive, Guesses
     
     WindowScreen.blit(Background, (0, 0))
-    WindowScreen.blit(Try1, (0, 0))
 
     if Guesses <= 7:
         AttemptNumber = GameFont.render(str(Guesses), True, Black)
@@ -132,22 +142,24 @@ def GameScreen():
         WindowScreen.blit(Try9, (0, 0))
     elif Guesses == 9:
         WindowScreen.blit(Try10, (0, 0))
+    
+    DisplayGuessedLetters = DisplayGuessedLettersFont.render(", ".join(GuessedLetters), True, Black)
+    DisplayGuessedLettersRect = DisplayGuessedLetters.get_rect(midtop=(FrameX / 2, 240))
+    WindowScreen.blit(DisplayGuessedLetters, DisplayGuessedLettersRect)
 
 def UpdateWord():
-    print(Guess)
     WordGame = GameFont.render(Guess, True, Black)
-    WordGameRect = WordGame.get_rect(center=(FrameX/2, 300))
+    WordGameRect = WordGame.get_rect(center=(FrameX / 2, 325))
     WindowScreen.blit(WordGame, WordGameRect)
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (pygame.KEYDOWN and event.type == pygame.K_ESCAPE):
             pygame.quit()
-            print(GuessedLetters)
-            exit()
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
             if not GameActive and not LoseScreen and not WinScreen:
+                Guesses = 0
                 Initialize()
                 GameActive = True
                 FindNewWord()
@@ -158,13 +170,9 @@ while True:
                 WinScreen = False
                 GameActive = False
 
-        if event.type == pygame.KEYDOWN and event.key != pygame.K_RETURN and GameActive:
+        if event.type == pygame.KEYDOWN and event.unicode.isalpha() and GameActive:
             LetterGuessed = event.unicode.upper()
             CheckLetters(RandomWord, LetterGuessed)
-            print(Guess)
-
-        # if event.type == pygame.KEYDOWN:
-        #    "Hello, World!"(print)
 
         if GameActive:
             if LetterGuessed not in GuessedLetters and LetterGuessed not in RandomWord:
